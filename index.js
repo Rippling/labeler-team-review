@@ -1,5 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
+const _ = require('lodash');
 
 // Main method
 async function run() {
@@ -47,18 +48,14 @@ function getPrNumber() {
 }
 
 async function getTeamMembers(client, teamSlug) {
-  const team = await client.rest.teams.getByName({
+  const team = await client.rest.teams.listMembersInOrg({
     org: github.context.repo.owner,
     team_slug: teamSlug,
   });
   if (!team) {
     return [];
   }
-  const teamId = team.data.id;
-  const members = await client.rest.teams.listMembers({
-    team_id: teamId,
-  });
-  return _.map(members.data, 'login');
+  return _.map(team.data, 'login');
 }
 
 async function getCurrentComments(client, prNumber) {
