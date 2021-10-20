@@ -8468,7 +8468,7 @@ async function run() {
     }
     console.log(`>>> PR: ${prNumber}`);
 
-    const client = github.getOctokit(accessToken);
+    const client = new github.GitHub(token);
     const teamMembers = await getTeamMembers(client, ipTeam);
     const currentReviewers = await getCurrentReviewers(client, prNumber);
     const currentComments = await getCurrentComments(client, prNumber)
@@ -8491,7 +8491,7 @@ function getPrNumber() {
 }
 
 async function getTeamMembers(client, teamSlug) {
-  const team = await client.rest.teams.getByName({
+  const team = await client.teams.getByName({
     org: github.context.repo.owner,
     team_slug: teamSlug,
   });
@@ -8499,14 +8499,14 @@ async function getTeamMembers(client, teamSlug) {
     return [];
   }
   const teamId = team.data.id;
-  const members = await client.rest.teams.listMembers({
+  const members = await client.teams.listMembers({
     team_id: teamId,
   });
   return _.map(members.data, 'login');
 }
 
 async function getCurrentComments(client, prNumber) {
-  return client.rest.issues
+  return client.issues
     .listComments({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
@@ -8519,7 +8519,7 @@ async function getCurrentComments(client, prNumber) {
 }
 
 async function getCurrentReviewers(client, prNumber) {
-  return client.rest.pulls
+  return client.pulls
     .listReviews({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
