@@ -37,7 +37,9 @@ async function run() {
     console.log(`>>> Comments`, currentComments);
 
     if (isTeamActionAvailable) {
-      console.log('Team has taken action');
+      console.log('>>> Team has taken action');
+      await addLabels(client, prNumber, [ipLabel]);
+      console.log('>>> Success');
     }
 
   } catch (error) {
@@ -47,6 +49,15 @@ async function run() {
 }
 
 // Helper functions
+async function addLabels(client, prNumber, labels) {
+  await client.rest.issues.addLabels({
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    issue_number: prNumber,
+    labels: labels,
+  });
+}
+
 function getPrNumber() {
   const pullRequest = github.context.payload.pull_request || github.context.payload.issue;
   if (!pullRequest) {
