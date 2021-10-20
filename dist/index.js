@@ -25703,6 +25703,7 @@ async function run() {
     }
 
     const client = github.getOctokit(accessToken);
+    const clientBot = github.getOctokit(ipToken);
     const teamMembers = await getTeamMembers(client, ipTeam);
     const currentReviewers = await getCurrentReviewers(client, prNumber);
     const currentComments = await getCurrentComments(client, prNumber)
@@ -25716,7 +25717,7 @@ async function run() {
 
     if (isTeamActionAvailable) {
       console.log('>>> Team has taken action');
-      await addLabels(client, prNumber, [ipLabel]);
+      await addLabels(clientBot, prNumber, [ipLabel]);
       console.log('>>> Success');
     }
 
