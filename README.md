@@ -64,7 +64,19 @@ See the [versioning documentation](https://github.com/actions/toolkit/blob/maste
 You can now consume the action by referencing the v1 branch
 
 ```yaml
-uses: Rippling/labeler-team-review@v1
-with:
-  milliseconds: 1000
+name: Team Review Labeler
+on:
+  pull_request_review:
+    types: [submitted]
+  issue_comment:
+    types: [created]
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Rippling/labeler-team-review@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN}}
+          team: frontend
+          label: fe-reviewed
 ```
