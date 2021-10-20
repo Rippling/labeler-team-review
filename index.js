@@ -31,6 +31,8 @@ async function run() {
     const currentComments = await getCurrentComments(client, prNumber)
 
     console.log(`>>> Team`, teamMembers);
+    console.log(`>>> Reviewers`, currentReviewers);
+    console.log(`>>> Comments`, currentComments);
   } catch (error) {
     console.error(error);
     core.setFailed(error.message);
@@ -65,9 +67,8 @@ async function getCurrentComments(client, prNumber) {
       repo: github.context.repo.repo,
       issue_number: prNumber,
     })
-    .then(({ data }) => {
-      console.log(`comments`, data);
-      return data;
+    .then(({ data: comments }) => {
+      return _.uniq(_.map(comments, 'user.login'));
     });
 }
 
@@ -79,12 +80,7 @@ async function getCurrentReviewers(client, prNumber) {
       pull_number: prNumber,
     })
     .then(({ data: reviews }) => {
-      console.log(`reviews`, reviews);
-      return reviews;
-      // return reviews.reduce(
-      //   (acc, review) => (review.state === 'APPROVED' ? acc + 1 : acc),
-      //   0
-      // )
+      return _.uniq(_.map(reviews, 'user.login'));
     });
 }
 
