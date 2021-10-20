@@ -25683,7 +25683,6 @@ async function run() {
     const ipToken = core.getInput('repo-token', { required: true });
     const accessToken = core.getInput('access-token', { required: true });
     console.log(`>>> Event: ${github.context.eventName}`);
-    console.log(`>>> Context:`, github.context);
     console.log(`>>> Team: ${ipTeam} / Label: ${ipLabel}`);
 
     if (!ipTeam || !ipLabel || !ipToken || !accessToken) {
@@ -25702,10 +25701,18 @@ async function run() {
     const teamMembers = await getTeamMembers(client, ipTeam);
     const currentReviewers = await getCurrentReviewers(client, prNumber);
     const currentComments = await getCurrentComments(client, prNumber)
+    const allActioners = [...currentReviewers, ...currentComments];
+
+    const isTeamActionAvailable = _.some(allActioners, login => teamMembers.includes(login));
 
     console.log(`>>> Team`, teamMembers);
     console.log(`>>> Reviewers`, currentReviewers);
     console.log(`>>> Comments`, currentComments);
+
+    if (isTeamActionAvailable) {
+      console.log('Team has taken action');
+    }
+
   } catch (error) {
     console.error(error);
     core.setFailed(error.message);
