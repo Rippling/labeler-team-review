@@ -8453,7 +8453,7 @@ async function run() {
     const ipToken = core.getInput('repo-token', { required: true });
     console.log(`>>> Event: ${github.context.eventName}`);
     console.log(`>>> Context:`, github.context);
-    console.log(`>>> Org: ${ipOrg} / Team: ${ipTeam} / Label: ${ipLabel}`);
+    console.log(`>>> Team: ${ipTeam} / Label: ${ipLabel}`);
 
     if (!ipTeam || !ipLabel || !ipToken) {
       console.log('Err: Missing input, exiting');
