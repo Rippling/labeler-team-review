@@ -8451,7 +8451,7 @@ async function run() {
     const ipTeam = core.getInput('team', { required: true });
     const ipLabel = core.getInput('label', { required: true });
     const ipToken = core.getInput('repo-token', { required: true });
-    const accessToken = core.getInput('repo-token', { required: true });
+    const accessToken = core.getInput('access-token', { required: true });
     console.log(`>>> Event: ${github.context.eventName}`);
     console.log(`>>> Context:`, github.context);
     console.log(`>>> Team: ${ipTeam} / Label: ${ipLabel}`);
@@ -8468,7 +8468,7 @@ async function run() {
     }
     console.log(`>>> PR: ${prNumber}`);
 
-    const client = new github.GitHub(token);
+    const client = github.getOctokit(accessToken);
     const teamMembers = await getTeamMembers(client, ipTeam);
     const currentReviewers = await getCurrentReviewers(client, prNumber);
     const currentComments = await getCurrentComments(client, prNumber)
@@ -8491,7 +8491,7 @@ function getPrNumber() {
 }
 
 async function getTeamMembers(client, teamSlug) {
-  const team = await client.teams.getByName({
+  const team = await client.rest.teams.getByName({
     org: github.context.repo.owner,
     team_slug: teamSlug,
   });
@@ -8499,14 +8499,14 @@ async function getTeamMembers(client, teamSlug) {
     return [];
   }
   const teamId = team.data.id;
-  const members = await client.teams.listMembers({
+  const members = await client.rest.teams.listMembers({
     team_id: teamId,
   });
   return _.map(members.data, 'login');
 }
 
 async function getCurrentComments(client, prNumber) {
-  return client.issues
+  return client.rest.issues
     .listComments({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
@@ -8519,7 +8519,7 @@ async function getCurrentComments(client, prNumber) {
 }
 
 async function getCurrentReviewers(client, prNumber) {
-  return client.pulls
+  return client.rest.pulls
     .listReviews({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
