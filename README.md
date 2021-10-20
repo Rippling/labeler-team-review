@@ -76,7 +76,7 @@ jobs:
     steps:
       - uses: Rippling/labeler-team-review@v1
         with:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN}}
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
           team: frontend
           label: fe-reviewed
 ```
