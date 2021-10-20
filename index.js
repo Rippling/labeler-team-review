@@ -23,7 +23,7 @@ async function run() {
     }
     console.log(`>>> PR: ${prNumber}`);
 
-    const client = github.getOctokit(token);
+    const client = github.getOctokit(ipToken);
     const teamMembers = await getTeamMembers(client, ipTeam);
     const currentReviewers = await getCurrentReviewers(client, prNumber);
     const currentComments = await getCurrentComments(client, prNumber)
