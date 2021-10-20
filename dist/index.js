@@ -8451,11 +8451,12 @@ async function run() {
     const ipTeam = core.getInput('team', { required: true });
     const ipLabel = core.getInput('label', { required: true });
     const ipToken = core.getInput('repo-token', { required: true });
+    const accessToken = core.getInput('repo-token', { required: true });
     console.log(`>>> Event: ${github.context.eventName}`);
     console.log(`>>> Context:`, github.context);
     console.log(`>>> Team: ${ipTeam} / Label: ${ipLabel}`);
 
-    if (!ipTeam || !ipLabel || !ipToken) {
+    if (!ipTeam || !ipLabel || !ipToken || !accessToken) {
       console.log('Err: Missing input, exiting');
       return;
     }
@@ -8467,12 +8468,12 @@ async function run() {
     }
     console.log(`>>> PR: ${prNumber}`);
 
-    const client = github.getOctokit(ipToken);
-    // const teamMembers = await getTeamMembers(client, ipTeam);
+    const client = github.getOctokit(accessToken);
+    const teamMembers = await getTeamMembers(client, ipTeam);
     const currentReviewers = await getCurrentReviewers(client, prNumber);
     const currentComments = await getCurrentComments(client, prNumber)
 
-    // console.log(`>>> Team`, teamMembers);
+    console.log(`>>> Team`, teamMembers);
   } catch (error) {
     console.error(error);
     core.setFailed(error.message);
