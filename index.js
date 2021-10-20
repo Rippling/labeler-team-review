@@ -48,7 +48,7 @@ async function run() {
 
 // Helper functions
 function getPrNumber() {
-  const pullRequest = github.context.payload.pull_request;
+  const pullRequest = github.context.payload.pull_request || github.context.payload.issue;
   if (!pullRequest) {
     return undefined;
   }
