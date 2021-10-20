@@ -28,7 +28,7 @@ async function run() {
     const currentReviewers = await getCurrentReviewers(client, prNumber);
     const currentComments = await getCurrentComments(client, prNumber)
 
-    console.log(`>>> Team`, teamMembers);
+    // console.log(`>>> Team`, teamMembers);
   } catch (error) {
     console.error(error);
     core.setFailed(error.message);
