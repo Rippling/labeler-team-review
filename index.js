@@ -8,6 +8,7 @@ async function run() {
     const ipLabel = core.getInput('label', { required: true });
     const ipToken = core.getInput('repo-token', { required: true });
     console.log(`>>> Event: ${github.context.eventName}`);
+    console.log(`>>> Context:`, github.context);
     console.log(`>>> Org: ${ipOrg} / Team: ${ipTeam} / Label: ${ipLabel}`);
 
     if (!ipTeam || !ipLabel || !ipToken) {
@@ -42,24 +43,6 @@ function getPrNumber() {
   }
 
   return pullRequest.number;
-}
-
-async function getChangedFiles(client, prNumber) {
-  const listFilesOptions = client.rest.pulls.listFiles.endpoint.merge({
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    pull_number: prNumber,
-  });
-
-  const listFilesResponse = await client.paginate(listFilesOptions);
-  const changedFiles = listFilesResponse.map((f) => f.filename);
-
-  core.debug('found changed files:');
-  for (const file of changedFiles) {
-    core.debug('  ' + file);
-  }
-
-  return changedFiles;
 }
 
 async function getTeamMembers(client, teamSlug) {
