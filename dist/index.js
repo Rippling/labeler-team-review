@@ -25683,6 +25683,7 @@ async function run() {
     const ipToken = core.getInput('repo-token', { required: true });
     const accessToken = core.getInput('access-token', { required: true });
     console.log(`>>> Event: ${github.context.eventName}`);
+    console.log(`>>> Context:`, github.context);
     console.log(`>>> Team: ${ipTeam} / Label: ${ipLabel}`);
 
     if (!ipTeam || !ipLabel || !ipToken || !accessToken) {
