@@ -8490,7 +8490,7 @@ function getPrNumber() {
 }
 
 async function getTeamMembers(client, teamSlug) {
-  const team = await client.teams.getByName({
+  const team = await client.rest.teams.getByName({
     org: github.context.repo.owner,
     team_slug: teamSlug,
   });
@@ -8498,14 +8498,14 @@ async function getTeamMembers(client, teamSlug) {
     return [];
   }
   const teamId = team.data.id;
-  const members = await client.teams.listMembers({
+  const members = await client.rest.teams.listMembers({
     team_id: teamId,
   });
   return _.map(members.data, 'login');
 }
 
 async function getCurrentComments(client, prNumber) {
-  return client.issues
+  return client.rest.issues
     .listComments({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
@@ -8518,7 +8518,7 @@ async function getCurrentComments(client, prNumber) {
 }
 
 async function getCurrentReviewers(client, prNumber) {
-  return client.pulls
+  return client.rest.pulls
     .listReviews({
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
