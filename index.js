@@ -10,7 +10,6 @@ async function run() {
     const ipToken = core.getInput('repo-token', { required: true });
     const accessToken = core.getInput('access-token', { required: true });
     console.log(`>>> Event: ${github.context.eventName}`);
-    console.log(`>>> Context:`, github.context);
     console.log(`>>> Team: ${ipTeam} / Label: ${ipLabel}`);
 
     if (!ipTeam || !ipLabel || !ipToken || !accessToken) {
@@ -23,19 +22,24 @@ async function run() {
       console.log('>>> Err: Could not get pull request number from context, exiting');
       return;
     }
-    console.log(`>>> PR: ${prNumber}`);
+    console.log(`>>> PR/Issue Number: ${prNumber}`);
+
+    const authorLogin = getPrAuthor();
+    if (authorLogin) {
+      console.log(`>>> PR Author: ${authorLogin}`);
+    }
 
     const client = github.getOctokit(accessToken);
     const teamMembers = await getTeamMembers(client, ipTeam);
     const currentReviewers = await getCurrentReviewers(client, prNumber);
     const currentComments = await getCurrentComments(client, prNumber)
-    const allActioners = [...currentReviewers, ...currentComments];
-
+    const allActioners = _.filter([...currentReviewers, ...currentComments], login => login !== authorLogin);
     const isTeamActionAvailable = _.some(allActioners, login => teamMembers.includes(login));
 
     console.log(`>>> Team`, teamMembers);
     console.log(`>>> Reviewers`, currentReviewers);
     console.log(`>>> Comments`, currentComments);
+    console.log(`>>> All Valid Actioners`, allActioners);
 
     if (isTeamActionAvailable) {
       console.log('>>> Team has taken action');
@@ -66,6 +70,16 @@ function getPrNumber() {
   }
 
   return pullRequest.number;
+}
+
+function getPrAuthor() {
+  const pullRequest = github.context.payload.pull_request || github.context.payload.issue;
+  if (!pullRequest) {
+    return undefined;
+  }
+
+  return pullRequest.user.login;
+
 }
 
 async function getTeamMembers(client, teamSlug) {
