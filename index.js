@@ -108,7 +108,7 @@ async function notifySlack() {
   })
 
   Promise.all(notificationPromise)
-    .then((res) => console.log('>>> Notications sent', res))
+    .then(() => console.log('>>> Notications sent'))
     .catch((error) => {
       console.error(error);
       core.setFailed(error.message);
