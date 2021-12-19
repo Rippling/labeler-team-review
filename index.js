@@ -76,7 +76,7 @@ function getSlackChannelsToBeNotified(allSlackChannelList, prLabels) {
 
 async function notifySlack() {
   const slackChannelPath = core.getInput('slack-channel-list', { required: true });
-  const prLabels = core.getInput('pr-labels');
+  const prLabels = getPrLabels();
 
   if (!slackChannelPath) {
     console.log('Err: slackChannelPath, exiting');
