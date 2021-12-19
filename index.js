@@ -16,6 +16,8 @@ async function run() {
     const accessToken = core.getInput('access-token', { required: true });
     
 
+    console.log('labels', getPrLabels());
+
     console.log(`>>> Event: ${github.context.eventName}`);
     console.log(`>>> Team: ${ipTeam} / Label: ${ipLabel}`);
 
@@ -167,6 +169,16 @@ function getPrAuthor() {
   }
 
   return pullRequest.user.login;
+
+}
+
+function getPrLabels() {
+  const pullRequest = github.context.payload.pull_request || github.context.payload.issue;
+  if (!pullRequest) {
+    return undefined;
+  }
+
+  return pullRequest.labels;
 
 }
 
