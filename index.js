@@ -1,6 +1,11 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const _ = require('lodash');
+const fs = require('fs');
+const util = require('util');
+const fetch = require("node-fetch");
+
+const readFileAsync = util.promisify(fs.readFile);
 
 // Main method
 async function run() {
@@ -9,6 +14,8 @@ async function run() {
     const ipLabel = core.getInput('label', { required: true });
     const ipToken = core.getInput('repo-token', { required: true });
     const accessToken = core.getInput('access-token', { required: true });
+    
+
     console.log(`>>> Event: ${github.context.eventName}`);
     console.log(`>>> Team: ${ipTeam} / Label: ${ipLabel}`);
 
@@ -48,10 +55,81 @@ async function run() {
       console.log('>>> Success');
     }
 
+    await notifySlack(slackChannelsToBeNotified)
+
   } catch (error) {
     console.error(error);
     core.setFailed(error.message);
   }
+}
+
+function getSlackChannelsToBeNotified(allSlackChannelList, prLabels) {
+  return  (prLabels || []).reduce((acc, label) => {
+    if (allSlackChannelList[label]) {
+      acc.push(allSlackChannelList[label]);
+      return acc;
+    }
+  }, {});
+}
+
+async function notifySlack() {
+  const slackChannelPath = core.getInput('slack-channel-list', { required: true });
+  const prLabels = core.getInput('pr-labels');
+
+  if (!slackChannelPath) {
+    console.log('Err: slackChannelPath, exiting');
+    return;
+  }
+
+  // Read slack channel json
+  const buffer = await readFileAsync(slackChannelPath);
+  const allSlackChannelList = JSON.parse(buffer.toString());
+  const slackChannelsToBeNotified = getSlackChannelsToBeNotified(allSlackChannelList, prLabels);
+  console.log(`>>> Slack channels to be notified`, slackChannelsToBeNotified);
+
+  if(slackChannelsToBeNotified.length === 0) {
+    return;
+  }
+
+  const notificationPromise = slackChannelsToBeNotified.map(channel => {
+    const payload = {
+      channel,
+      blocks: [
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": `New pull request from ${getPrAuthor()}\n\n<${getPrUrl()}|View request>`
+          }
+        }
+      ]
+    };
+    return new Promise((resolve, reject) => {
+      await fetch("https://slack.com/api/chat.postMessage", {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Content-Length": payload.length,
+          Authorization: `Bearer ${core.getInput("slack-bearer-token")}`,
+          Accept: "application/json",
+        },
+      });
+      
+      if (!res.ok) {
+        reject(new Error(`Server error ${res.status}`));
+      } else {
+        resolve(res.status)
+      }
+    })
+  })
+
+  Promise.all(notificationPromise)
+    .then(() => console.log('>>> Notications sent'))
+    .catch((error) => {
+      console.error(error);
+      core.setFailed(error.message);
+    })
 }
 
 // Helper functions
@@ -71,6 +149,15 @@ function getPrNumber() {
   }
 
   return pullRequest.number;
+}
+
+function getPrUrl() {
+  const pullRequest = github.context.payload.pull_request || github.context.payload.issue;
+  if (!pullRequest) {
+    return undefined;
+  }
+
+  return pullRequest.html_url;
 }
 
 function getPrAuthor() {
