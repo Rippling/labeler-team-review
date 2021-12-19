@@ -1,11 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const _ = require('lodash');
-const fs = require('fs');
-const util = require('util');
 const fetch = require("node-fetch");
-
-const readFileAsync = util.promisify(fs.readFile);
 
 // Main method
 async function run() {
@@ -57,7 +53,7 @@ async function run() {
       console.log('>>> Success');
     }
 
-    await notifySlack(slackChannelsToBeNotified)
+    await notifySlack()
 
   } catch (error) {
     console.error(error);
@@ -75,18 +71,17 @@ function getSlackChannelsToBeNotified(allSlackChannelList, prLabels) {
 }
 
 async function notifySlack() {
-  const slackChannelPath = core.getInput('slack-channel-list', { required: true });
+  const slackChannelJSON = core.getInput('slackchannellist', { required: true });
   const prLabels = getPrLabels();
 
-  if (!slackChannelPath) {
-    console.log('Err: slackChannelPath, exiting');
+  if (!slackChannelJSON) {
+    console.log('Err: slackChannelJSON not found, exiting');
     return;
   }
 
   // Read slack channel json
-  const buffer = await readFileAsync(slackChannelPath);
-  const allSlackChannelList = JSON.parse(Buffer.from(buffer));
-  const slackChannelsToBeNotified = getSlackChannelsToBeNotified(allSlackChannelList, prLabels);
+  console.log(slackChannelJSON, 'slackChannelJSON')
+  const slackChannelsToBeNotified = getSlackChannelsToBeNotified(slackChannelJSON, prLabels);
   console.log(`>>> Slack channels to be notified`, slackChannelsToBeNotified);
 
   if(slackChannelsToBeNotified.length === 0) {
