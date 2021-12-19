@@ -60,12 +60,12 @@ async function run() {
 
 function getSlackChannelsToBeNotified(allSlackChannelList, prLabels) {
   let channelList = typeof allSlackChannelList === 'string' ? JSON.parse(allSlackChannelList) : allSlackChannelList;
-  return  (prLabels || []).reduce((acc, label) => {
+  return (prLabels || []).reduce((acc, label) => {
     if (channelList[label.name]) {
       acc.push(channelList[label.name]);
       return acc;
     }
-  }, {});
+  }, []);
 }
 
 async function notifySlack() {
