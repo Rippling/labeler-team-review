@@ -69,7 +69,7 @@ function getSlackChannelsToBeNotified(allSlackChannelList, prLabels) {
 }
 
 async function notifySlack() {
-  const slackChannelJSON = core.getInput('slackchannellist', { required: true });
+  const slackChannelJSON = core.getInput('slack-channel-list', { required: true });
   const prLabels = getPrLabels();
 
   if (!slackChannelJSON) {
