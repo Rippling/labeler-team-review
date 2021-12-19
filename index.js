@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const _ = require('lodash');
-const fetch = require("node-fetch");
+const axios = require("axios");
 
 // Main method
 async function run() {
@@ -101,9 +101,7 @@ async function notifySlack() {
         }
       ]
     };
-    return fetch("https://slack.com/api/chat.postMessage", {
-      method: "POST",
-      body: JSON.stringify(payload),
+    return axios.post("https://slack.com/api/chat.postMessage", payload, {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
         "Content-Length": payload.length,
