@@ -32483,11 +32483,7 @@ var __webpack_exports__ = {};
 const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 const _ = __nccwpck_require__(250);
-const fs = __nccwpck_require__(5747);
-const util = __nccwpck_require__(1669);
 const fetch = __nccwpck_require__(7894);
-
-const readFileAsync = util.promisify(fs.readFile);
 
 // Main method
 async function run() {
@@ -32539,7 +32535,7 @@ async function run() {
       console.log('>>> Success');
     }
 
-    await notifySlack(slackChannelsToBeNotified)
+    await notifySlack()
 
   } catch (error) {
     console.error(error);
@@ -32557,18 +32553,17 @@ function getSlackChannelsToBeNotified(allSlackChannelList, prLabels) {
 }
 
 async function notifySlack() {
-  const slackChannelPath = core.getInput('slack-channel-list', { required: true });
+  const slackChannelJSON = core.getInput('slackchannellist', { required: true });
   const prLabels = getPrLabels();
 
-  if (!slackChannelPath) {
-    console.log('Err: slackChannelPath, exiting');
+  if (!slackChannelJSON) {
+    console.log('Err: slackChannelJSON not found, exiting');
     return;
   }
 
   // Read slack channel json
-  const buffer = await readFileAsync(slackChannelPath);
-  const allSlackChannelList = JSON.parse(Buffer.from(buffer));
-  const slackChannelsToBeNotified = getSlackChannelsToBeNotified(allSlackChannelList, prLabels);
+  console.log(slackChannelJSON, 'slackChannelJSON')
+  const slackChannelsToBeNotified = getSlackChannelsToBeNotified(slackChannelJSON, prLabels);
   console.log(`>>> Slack channels to be notified`, slackChannelsToBeNotified);
 
   if(slackChannelsToBeNotified.length === 0) {
