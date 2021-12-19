@@ -29917,7 +29917,9 @@ async function run() {
 
 function getSlackChannelsToBeNotified(allSlackChannelList, prLabels) {
   let channelList = typeof allSlackChannelList === 'string' ? JSON.parse(allSlackChannelList) : allSlackChannelList;
+  console.log(channelList, 'channelList')
   return (prLabels || []).reduce((acc, label) => {
+    console.log(label.name, 'label.name', channelList[label.name], 'channelList[label.name]')
     if (channelList[label.name]) {
       acc.push(channelList[label.name]);
       return acc;
