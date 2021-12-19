@@ -18,7 +18,7 @@ async function run() {
 
     console.log('labels', getPrLabels());
 
-    console.log(`>>> Event: ${github.context.eventName}`);
+    console.log(`>>> Eventt: ${github.context.eventName}`);
     console.log(`>>> Team: ${ipTeam} / Label: ${ipLabel}`);
 
     if (!ipTeam || !ipLabel || !ipToken || !accessToken) {
@@ -85,7 +85,7 @@ async function notifySlack() {
 
   // Read slack channel json
   const buffer = await readFileAsync(slackChannelPath);
-  const allSlackChannelList = JSON.parse(buffer.toString());
+  const allSlackChannelList = JSON.parse(Buffer.from(buffer));
   const slackChannelsToBeNotified = getSlackChannelsToBeNotified(allSlackChannelList, prLabels);
   console.log(`>>> Slack channels to be notified`, slackChannelsToBeNotified);
 
@@ -177,7 +177,7 @@ function getPrLabels() {
   if (!pullRequest) {
     return undefined;
   }
-
+  console.log('here', pullRequest.labels)
   return pullRequest.labels;
 
 }
