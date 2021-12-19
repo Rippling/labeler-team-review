@@ -60,9 +60,7 @@ async function run() {
 
 function getSlackChannelsToBeNotified(allSlackChannelList, prLabels) {
   let channelList = typeof allSlackChannelList === 'string' ? JSON.parse(allSlackChannelList) : allSlackChannelList;
-  console.log(channelList, 'channelList', Object.keys(channelList) )
   return (prLabels || []).reduce((acc, label) => {
-    console.log(label.name, 'label.name', channelList[label.name], 'channelList[label.name]', Object.keys(channelList)[0] === label.name, Object.keys(channelList)[0] == label.name);
     if (channelList[label.name]) {
       acc.push(channelList[label.name]);
       return acc;
@@ -110,7 +108,7 @@ async function notifySlack() {
   })
 
   Promise.all(notificationPromise)
-    .then(() => console.log('>>> Notications sent'))
+    .then((res) => console.log('>>> Notications sent', res))
     .catch((error) => {
       console.error(error);
       core.setFailed(error.message);
