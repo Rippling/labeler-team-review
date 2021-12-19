@@ -29960,7 +29960,6 @@ async function notifySlack() {
     return axios.post("https://slack.com/api/chat.postMessage", payload, {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Content-Length": payload.length,
         Authorization: `Bearer ${core.getInput("slack-bearer-token")}`,
         Accept: "application/json",
       },
