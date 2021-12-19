@@ -106,24 +106,16 @@ async function notifySlack() {
         }
       ]
     };
-    return new Promise((resolve, reject) => {
-      await fetch("https://slack.com/api/chat.postMessage", {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          "Content-Length": payload.length,
-          Authorization: `Bearer ${core.getInput("slack-bearer-token")}`,
-          Accept: "application/json",
-        },
-      });
-      
-      if (!res.ok) {
-        reject(new Error(`Server error ${res.status}`));
-      } else {
-        resolve(res.status)
-      }
-    })
+    return fetch("https://slack.com/api/chat.postMessage", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Content-Length": payload.length,
+        Authorization: `Bearer ${core.getInput("slack-bearer-token")}`,
+        Accept: "application/json",
+      },
+    });
   })
 
   Promise.all(notificationPromise)
