@@ -11,9 +11,6 @@ async function run() {
     const ipToken = core.getInput('repo-token', { required: true });
     const accessToken = core.getInput('access-token', { required: true });
     
-
-    console.log('labels', getPrLabels());
-
     console.log(`>>> Eventt: ${github.context.eventName}`);
     console.log(`>>> Team: ${ipTeam} / Label: ${ipLabel}`);
 
@@ -62,9 +59,10 @@ async function run() {
 }
 
 function getSlackChannelsToBeNotified(allSlackChannelList, prLabels) {
+  let channelList = typeof allSlackChannelList === 'string' ? JSON.parse(allSlackChannelList) : allSlackChannelList;
   return  (prLabels || []).reduce((acc, label) => {
-    if (allSlackChannelList[label]) {
-      acc.push(allSlackChannelList[label]);
+    if (channelList[label.name]) {
+      acc.push(channelList[label.name]);
       return acc;
     }
   }, {});
@@ -80,11 +78,10 @@ async function notifySlack() {
   }
 
   // Read slack channel json
-  console.log(slackChannelJSON, 'slackChannelJSON')
   const slackChannelsToBeNotified = getSlackChannelsToBeNotified(slackChannelJSON, prLabels);
   console.log(`>>> Slack channels to be notified`, slackChannelsToBeNotified);
 
-  if(slackChannelsToBeNotified.length === 0) {
+  if(!slackChannelsToBeNotified || slackChannelsToBeNotified.length === 0) {
     return;
   }
 
@@ -162,7 +159,7 @@ function getPrLabels() {
   if (!pullRequest) {
     return undefined;
   }
-  console.log('here', pullRequest.labels)
+
   return pullRequest.labels;
 
 }
