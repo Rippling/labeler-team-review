@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const _ = require('lodash');
+const axios = require("axios");
 
 // Main method
 async function run() {
@@ -9,7 +10,8 @@ async function run() {
     const ipLabel = core.getInput('label', { required: true });
     const ipToken = core.getInput('repo-token', { required: true });
     const accessToken = core.getInput('access-token', { required: true });
-    console.log(`>>> Event: ${github.context.eventName}`);
+    
+    console.log(`>>> Eventt: ${github.context.eventName}`);
     console.log(`>>> Team: ${ipTeam} / Label: ${ipLabel}`);
 
     if (!ipTeam || !ipLabel || !ipToken || !accessToken) {
@@ -48,10 +50,69 @@ async function run() {
       console.log('>>> Success');
     }
 
+    await notifySlack()
+
   } catch (error) {
     console.error(error);
     core.setFailed(error.message);
   }
+}
+
+function getSlackChannelsToBeNotified(allSlackChannelList, prLabels) {
+  let channelList = typeof allSlackChannelList === 'string' ? JSON.parse(allSlackChannelList) : allSlackChannelList;
+  return (prLabels || []).reduce((acc, label) => {
+    if (channelList[label.name]) {
+      acc.push(channelList[label.name]);
+      return acc;
+    }
+  }, []);
+}
+
+async function notifySlack() {
+  const slackChannelJSON = core.getInput('slackchannellist', { required: true });
+  const prLabels = getPrLabels();
+
+  if (!slackChannelJSON) {
+    console.log('Err: slackChannelJSON not found, exiting');
+    return;
+  }
+
+  // Read slack channel json
+  const slackChannelsToBeNotified = getSlackChannelsToBeNotified(slackChannelJSON, prLabels);
+  console.log(`>>> Slack channels to be notified`, slackChannelsToBeNotified);
+
+  if(!slackChannelsToBeNotified || slackChannelsToBeNotified.length === 0) {
+    return;
+  }
+
+  const notificationPromise = slackChannelsToBeNotified.map(channel => {
+    const payload = {
+      channel,
+      blocks: [
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": `New pull request from ${getPrAuthor()}\n\n<${getPrUrl()}|View request>`
+          }
+        }
+      ]
+    };
+    return axios.post("https://slack.com/api/chat.postMessage", payload, {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        Authorization: `Bearer ${core.getInput("slack-bearer-token")}`,
+        Accept: "application/json",
+      },
+    });
+  })
+
+  Promise.all(notificationPromise)
+    .then(() => console.log('>>> Notications sent'))
+    .catch((error) => {
+      console.error(error);
+      core.setFailed(error.message);
+    })
 }
 
 // Helper functions
@@ -73,6 +134,15 @@ function getPrNumber() {
   return pullRequest.number;
 }
 
+function getPrUrl() {
+  const pullRequest = github.context.payload.pull_request || github.context.payload.issue;
+  if (!pullRequest) {
+    return undefined;
+  }
+
+  return pullRequest.html_url;
+}
+
 function getPrAuthor() {
   const pullRequest = github.context.payload.pull_request || github.context.payload.issue;
   if (!pullRequest) {
@@ -80,6 +150,16 @@ function getPrAuthor() {
   }
 
   return pullRequest.user.login;
+
+}
+
+function getPrLabels() {
+  const pullRequest = github.context.payload.pull_request || github.context.payload.issue;
+  if (!pullRequest) {
+    return undefined;
+  }
+
+  return pullRequest.labels;
 
 }
 
