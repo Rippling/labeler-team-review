@@ -25760,6 +25760,7 @@ async function getTeamMembers(client, teamSlug) {
   const team = await client.rest.teams.listMembersInOrg({
     org: github.context.repo.owner,
     team_slug: teamSlug,
+    per_page: 100,
   });
   if (!team) {
     return [];
